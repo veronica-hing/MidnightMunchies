@@ -1,0 +1,45 @@
+.game{
+  overflow: hidden;
+  max-width: 600px;
+  max-height: 450px;
+  position: relative;
+}
+
+.background{
+  background: gray;
+  table-layout: fixed;
+  border-spacing: 0;
+}
+
+.background td{
+  padding: 0;
+}
+
+.actor{
+  position: absolute;
+}
+
+.player{
+  background: blue;
+}
+
+.cookie{
+  background: brown;
+  border-radius: 50%;
+}
+
+.lightning{
+  background: yellow;
+}
+
+.wall{
+  background: pink;
+}
+
+.monster{
+  background: purple;
+}
+
+.winSpot{
+  background: green;
+}
