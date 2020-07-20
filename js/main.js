@@ -140,8 +140,8 @@ const arrowKeys = trackKeys(['ArrowLeft', 'ArrowRight', 'ArrowUp']);
 //Actor classes in the levels that are part of actor list
 
 const playerXSpeed = 9;
-const gravity = 33;
-const jumpSpeed = 21;
+const gravity = 25;
+const jumpSpeed = 16;
 class Player{
   constructor(pos, speed){
     this.pos = pos;
@@ -235,6 +235,20 @@ Monster.prototype.update = function(time, state){
     return new Monster(this.pos, this.speed.times(-1));
   }
 };
+Monster.prototype.collide = function(state){
+  let monster = state.actors.filter(a => a == this)[0];
+  let player = state.actors.filter(a => a.type == 'player')[0];
+  let newLife = state.status[2];
+
+  if(player.pos.y < monster.pos.y){//lower y is closer to "top"
+    let filtered = state.actors.filter(a => a != this);
+    newLife += 1;
+    return new State(state.level, filtered, state.status[0], state.status[1], newLife);
+  } else{
+    newLife -=1;
+    return new State(state.level, state.actors, 'lost', state.status[1], newLife);
+  }
+}
 
 const wobbleSpeed = 6, wobbleDist = .1;
 class Cookie{
