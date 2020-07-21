@@ -156,7 +156,7 @@ class Player{
     return new Player(pos.plus(new Vec(0, -0.5)), new Vec(0,0));
   }
 }
-Player.prototype.size = new Vec(0.8, 1.5);
+Player.prototype.size = new Vec(0.8, 1.0);
 Player.prototype.update = function(time, state, keys){
   let xSpeed = 0;
   if(keys.ArrowLeft){
@@ -239,16 +239,18 @@ Monster.prototype.collide = function(state){
   let monster = state.actors.filter(a => a == this)[0];
   let player = state.actors.filter(a => a.type == 'player')[0];
   let newLife = state.status[2];
+  let newSpeed = new Vec(player.speed.x, (-1*player.speed.y));
+  player.speed = newSpeed;
 
   if(player.pos.y < monster.pos.y){//lower y is closer to "top"
-    let filtered = state.actors.filter(a => a != this);
+    let filtered = state.actors.filter(a => a != this);//remove Monster
     newLife += 1;
     return new State(state.level, filtered, state.status[0], state.status[1], newLife);
   } else{
     newLife -=1;
     return new State(state.level, state.actors, 'lost', state.status[1], newLife);
   }
-}
+};
 
 const wobbleSpeed = 6, wobbleDist = .1;
 class Cookie{
@@ -273,7 +275,6 @@ Cookie.prototype.update = function(time){
 };
 
 Cookie.prototype.collide = function(state){
-  console.log(state.status);
   let newCookies = state.status[1] + 1;
   let newLife = state.status[2];
   let filtered = state.actors.filter(a => a != this);
@@ -281,7 +282,6 @@ Cookie.prototype.collide = function(state){
     newLife += 1;
     newCookies = 0;
   }
-  console.log(newLife);
   return new State(state.level, filtered, state.status[0], newCookies, newLife);
 };
 
@@ -407,10 +407,8 @@ function runAnimation(frameFunc){
 function runLevel(level, Display, cookies, life){
   let display = new Display(document.body, level);
   let state = State.start(level, cookies, life);
-  console.log('in runLevel');
   let ending = 1;
   return new Promise(resolve => {
-    console.log('in promise');
     runAnimation(time => {
       state = state.update(time, arrowKeys);
       display.syncState(state);
@@ -431,11 +429,8 @@ function runLevel(level, Display, cookies, life){
 async function runGame(plans, Display){
   var startLife = 10;
   var startCookie = 0;
-  console.log('started game');
   for(let level = 0; level < plans.length;){
-    console.log('about to call runLevel');
     let status = await runLevel(new Level(plans[level]), Display ,startCookie, startLife);
-    console.log(status);
     if(status[0] == 'won'){
       startLife = status[2];
       startCookie = status[1];
