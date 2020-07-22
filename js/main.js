@@ -158,6 +158,17 @@ class Player{
 }
 Player.prototype.size = new Vec(0.8, 1.0);
 Player.prototype.update = function(time, state, keys){
+  //check if player is touching a cloud
+  let clouds = state.actors.filter(a => a.type == 'cloud');//array of clouds
+  let touching = false;
+  for(let i = 0; i < clouds.length; i++){
+    if(overlap(clouds[i], this)){
+      var myCloud = clouds[i];
+      touching = true;
+      break;
+    }
+  }//found out if touching a cloud
+
   let xSpeed = 0;
   if(keys.ArrowLeft){
     xSpeed -= playerXSpeed;
@@ -167,6 +178,10 @@ Player.prototype.update = function(time, state, keys){
     xSpeed += playerXSpeed;
   }
 
+  if(touching){
+    xSpeed += myCloud.speed.x;
+  }
+
   let pos = this.pos;
   let movedX = pos.plus(new Vec(xSpeed*time, 0));
   if(!state.level.touches(movedX, this.size, 'wall')){
@@ -174,6 +189,9 @@ Player.prototype.update = function(time, state, keys){
   }
 
   let ySpeed = this.speed.y + time*gravity; //it's addition since larger y is lower on screen
+  if(touching && this.pos.y == myCloud.pos.y){
+    ySpeed = this.speed.y;
+  }
   let movedY = pos.plus(new Vec(0, ySpeed*time));
   if(!state.level.touches(movedY, this.size, 'wall')){
     pos = movedY;
@@ -182,9 +200,48 @@ Player.prototype.update = function(time, state, keys){
   } else {
     ySpeed = 0;
   }
+
   return new Player(pos, new Vec(xSpeed, ySpeed));
 };
 
+class Cloud{
+  constructor(pos, speed){
+    this.pos = pos;
+    this.speed = speed;
+  }
+
+  get type(){return 'cloud'}
+
+  static create(pos, ch){
+    switch(ch){
+      case '>': return new Cloud(pos, new Vec(5,0));
+      case '<': return new Cloud(pos, new Vec(-5,0));
+    }
+
+  }
+}
+Cloud.prototype.size = new Vec(1,1);//state.level.width
+Cloud.prototype.update = function(time, state){
+  let newPos = this.pos.plus(this.speed.times(time));
+  if(newPos.x > state.level.width){//right cloud falls off right edge
+    return new Cloud(new Vec(0, this.pos.y), this.speed);
+  } else if (newPos.x < 0){//left cloud falls off left edge
+    return new Cloud(new Vec(state.level.width, this.pos.y), this.speed);
+  } else{
+    return new Cloud(newPos, this.speed);//cloud's doing ok
+  }
+};
+Cloud.prototype.collide = function(state){
+  let player = state.actors.filter(a => a.type == 'player')[0];
+  let cloud = state.actors.filter(a => a == this)[0];
+  let filtered = state.actors.filter(a => a.type != 'player');//remove old player
+  if(player.pos.y < cloud.pos.y){
+    player.speed.y = 0;//doesn't fall through
+  }
+  console.log(`playerX: ${player.speed.x}: cloud speed: ${cloud.speed.x}`);
+  filtered.push(player);//put new player in
+  return new State(state.level, filtered, state.status[0], state.status[1], state.status[2]);
+};
 class Lightning{
   constructor(pos, speed){
     this.pos = pos;
@@ -313,6 +370,8 @@ const levelChars = {
   'm': Monster,
   '@': Player,
   'o': Cookie,
+  '<': Cloud,
+  '>': Cloud,
   'x': WinSpot
 }
 //Displaying level and actors
