@@ -127,7 +127,7 @@ function trackKeys(keys){
   function track(event){
     if(keys.includes(event.key)){
       down[event.key] = event.type == 'keydown';
-      event.preventDefault();
+      //event.preventDefault();
     }
   }
   window.addEventListener('keydown', track);
@@ -168,7 +168,6 @@ Player.prototype.update = function(time, state, keys){
       break;
     }
   }//found out if touching a cloud
-
   let xSpeed = 0;
   if(keys.ArrowLeft){
     xSpeed -= playerXSpeed;
@@ -193,14 +192,25 @@ Player.prototype.update = function(time, state, keys){
     ySpeed = this.speed.y;
   }
   let movedY = pos.plus(new Vec(0, ySpeed*time));
-  if(!state.level.touches(movedY, this.size, 'wall')){
-    pos = movedY;
-  } else if(keys.ArrowUp && ySpeed > 0){
-    ySpeed = -jumpSpeed;
-  } else {
-    ySpeed = 0;
+  if(!state.level.touches(movedY, this.size, 'wall')){//not on land
+    if(!keys.ArrowUp){
+      if(this.speed.y < 0){//stopped jumping
+        ySpeed = 0;
+      } else if( this.speed.y > 0){//active falling
+        //ySpeed += time*gravity; do nothing since this is default
+      } else {//about to fall
+        ySpeed = time*gravity;}
+    }//end falling mid-air
+  } else {//on land
+    if(keys.ArrowUp){
+      ySpeed = -jumpSpeed;
+    } else {
+        ySpeed = 0;
+    }
   }
 
+  movedY = pos.plus(new Vec(0, ySpeed*time));
+  pos = movedY;
   return new Player(pos, new Vec(xSpeed, ySpeed));
 };
 
