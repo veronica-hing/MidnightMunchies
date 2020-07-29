@@ -339,6 +339,8 @@ Cookie.prototype.collide = function(state){
     newLife += 1;
     newCookies = 0;
   }
+  document.getElementById('totalCookies').innerHTML = newCookies;//reset your coin count immediately
+  document.getElementById('hp').innerHTML = newLife;
   return new State(state.level, filtered, state.status[0], newCookies, newLife);
 };
 
@@ -486,19 +488,24 @@ function runLevel(level, Display, cookies, life){
 }
 
 async function runGame(plans, Display){
+  let playerHP = document.getElementById('hp');
   var startLife = 10;
   var startCookie = 0;
+  playerHP.innerHTML = startLife;
   for(let level = 0; level < plans.length;){
     let status = await runLevel(new Level(plans[level]), Display ,startCookie, startLife);
     if(status[0] == 'won'){
       startLife = status[2];
       startCookie = status[1];
       level++;
+      playerHP.innerHTML = startLife;
+      document.getElementById('totalCookies').innerHTML = 0;//reset your cookie count immediately
     }
     if(status[0] =='lost'){
       startLife = status[2] - 1;
       startCookie = status[1];
-      console.log(`Lives left: ${startLife}`);
+      playerHP.innerHTML = startLife;
+      document.getElementById('totalCookies').innerHTML = 0;//reset your cookie count immediately
     }
   }
   console.log("you've won... for now");

@@ -2,14 +2,24 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
     <title>Midnight Munchies</title>
     <link rel="stylesheet" href="css/style.css">
     <script src = "js/main.js"></script>
     <script src="js/levels.js"></script>
   </head>
   <body>
+    <div class="statBar">
+      <div class="stat life">
+        <span>Life: </span><span id = "hp"></span>
+      </div>
+    <div class="stat cookies">
+      <span>Cookies: </span><span id = "totalCookies"></span>
+    </div>
+  </div>
+    <script type="text/javascript">
+      runGame(GAME_LEVELS, DOMDisplay);
+    </script>
   </body>
-  <script type="text/javascript">
-    runGame(GAME_LEVELS, DOMDisplay);
-  </script>
+
 </html>
